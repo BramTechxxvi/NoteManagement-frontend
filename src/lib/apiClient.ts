@@ -18,13 +18,14 @@ if (!BASE_URL && import.meta.env.DEV) {
 
 /** Structured error thrown for non-2xx responses. */
 export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly statusText: string,
-    message: string,
-  ) {
+  readonly status: number
+  readonly statusText: string
+
+  constructor(status: number, statusText: string, message: string) {
     super(message)
     this.name = 'ApiError'
+    this.status = status
+    this.statusText = statusText
   }
 }
 
