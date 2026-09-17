@@ -1,5 +1,5 @@
 export interface Note {
-  id: number
+  id: string   // MongoDB ObjectId — string, not number
   title: string
   content: string
   createdAt?: string | null

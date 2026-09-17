@@ -15,7 +15,7 @@ const ENDPOINTS = {
 
 function mapNote(raw: Record<string, unknown>): Note {
   return {
-    id: raw.id as number,
+    id: String(raw.id),   // MongoDB ObjectId comes back as a string
     title: raw.title as string,
     content: raw.content as string,
     createdAt: (raw.createdAt ?? raw.created_at ?? null) as string | null,

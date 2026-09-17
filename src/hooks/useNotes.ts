@@ -42,7 +42,7 @@ type Action =
   | { type: 'MUTATE_ERROR'; payload: string }
   | { type: 'NOTE_CREATED'; payload: Note }
   | { type: 'NOTE_UPDATED'; payload: Note }
-  | { type: 'NOTE_DELETED'; payload: number }
+  | { type: 'NOTE_DELETED'; payload: string }
   | { type: 'ALL_DELETED' }
   | { type: 'CLEAR_MUTATION_ERROR' }
 
@@ -88,8 +88,8 @@ function reducer(state: NotesState, action: Action): NotesState {
 export interface UseNotesReturn extends NotesState {
   refresh: () => Promise<void>
   create: (payload: CreateNotePayload) => Promise<Note | null>
-  update: (id: number, payload: UpdateNotePayload) => Promise<Note | null>
-  remove: (id: number) => Promise<boolean>
+  update: (id: string, payload: UpdateNotePayload) => Promise<Note | null>
+  remove: (id: string) => Promise<boolean>
   removeAll: () => Promise<boolean>
   clearMutationError: () => void
 }
