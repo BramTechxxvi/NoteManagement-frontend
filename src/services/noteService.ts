@@ -29,7 +29,6 @@ function mapNote(raw: Record<string, unknown>): Note {
 
 export async function getAllNotes(): Promise<Note[]> {
   const data = await apiClient.get<Record<string, unknown>[]>(ENDPOINTS.getAllNotes)
-  // Guard: backend might return null/undefined on empty list
   if (!Array.isArray(data)) return []
   return data.map(mapNote)
 }
