@@ -50,12 +50,12 @@ export function NoteEditor({
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
-  // Sync fields when the selected note changes or mode changes
+
   useEffect(() => {
     setTitle(note?.title ?? '')
     setContent(note?.content ?? '')
     setValidationError(null)
-  }, [note?.id, mode]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [note?.id, mode]) 
 
   // Auto-focus title in edit/new mode
   useEffect(() => {
