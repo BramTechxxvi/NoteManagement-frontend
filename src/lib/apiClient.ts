@@ -27,14 +27,19 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options
 
+  const hasBody = body !== undefined
+
   const response = await fetch(`${BASE_URL}${path}`, {
     ...rest,
     headers: {
-      'Content-Type': 'application/json',
+      // Only set Content-Type when there is actually a body.
+      // Sending Content-Type on a bodyless DELETE can cause Spring Boot to
+      // respond with 415 Unsupported Media Type.
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       Accept: 'application/json',
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: hasBody ? JSON.stringify(body) : undefined,
   })
 
   if (!response.ok) {
