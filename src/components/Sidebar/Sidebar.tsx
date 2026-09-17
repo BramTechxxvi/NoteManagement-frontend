@@ -1,9 +1,11 @@
 import { AnimatePresence } from 'framer-motion'
-import { FileText, Loader2, RefreshCw, Search, Trash2, X } from 'lucide-react'
+import { ArrowRight, FileText, Loader2, RefreshCw, Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { ApiStatus } from '@/hooks/useNotes'
 import type { Note } from '@/types/note'
 import { NoteListItem } from './NoteListItem'
+
+const SIDEBAR_PREVIEW_LIMIT = 8
 
 interface SidebarProps {
   notes: Note[]
@@ -13,7 +15,7 @@ interface SidebarProps {
   onSelect: (note: Note) => void
   onNewNote: () => void
   onRefresh: () => void
-  onDeleteAll: () => void
+  onViewAll: () => void
 }
 
 export function Sidebar({
@@ -24,7 +26,7 @@ export function Sidebar({
   onSelect,
   onNewNote,
   onRefresh,
-  onDeleteAll,
+  onViewAll,
 }: SidebarProps) {
   const [query, setQuery] = useState('')
 
@@ -37,6 +39,10 @@ export function Sidebar({
         n.content.toLowerCase().includes(q),
     )
   }, [notes, query])
+
+  // In search mode show all matches; otherwise cap at the preview limit
+  const visibleNotes = query ? filtered : filtered.slice(0, SIDEBAR_PREVIEW_LIMIT)
+  const hiddenCount = query ? 0 : Math.max(0, filtered.length - SIDEBAR_PREVIEW_LIMIT)
 
   const isLoading = fetchStatus === 'loading'
 
@@ -58,29 +64,15 @@ export function Sidebar({
             )}
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={onRefresh}
-              disabled={isLoading}
-              aria-label="Refresh notes"
-              title="Refresh notes"
-              className="p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-muted)] disabled:opacity-40 transition-colors cursor-pointer"
-            >
-              <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-            </button>
-
-            {/* Delete all — tucked into overflow to avoid prominence */}
-            {notes.length > 0 && (
-              <button
-                onClick={onDeleteAll}
-                aria-label="Delete all notes"
-                title="Delete all notes"
-                className="p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] transition-colors cursor-pointer"
-              >
-                <Trash2 size={14} />
-              </button>
-            )}
-          </div>
+          <button
+            onClick={onRefresh}
+            disabled={isLoading}
+            aria-label="Refresh notes"
+            title="Refresh notes"
+            className="p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-muted)] disabled:opacity-40 transition-colors cursor-pointer"
+          >
+            <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          </button>
         </div>
 
         {/* Search */}
@@ -160,7 +152,7 @@ export function Sidebar({
         )}
 
         <AnimatePresence initial={false}>
-          {filtered.map(note => (
+          {visibleNotes.map(note => (
             <div key={note.id} role="listitem">
               <NoteListItem
                 note={note}
@@ -171,6 +163,22 @@ export function Sidebar({
           ))}
         </AnimatePresence>
       </div>
+
+      {/* View all notes footer — only shown when there are hidden notes */}
+      {hiddenCount > 0 && (
+        <div className="px-3 py-2.5 border-t border-[var(--color-border-subtle)] shrink-0">
+          <button
+            onClick={onViewAll}
+            className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-[var(--radius-md)] text-[var(--color-accent)] bg-[var(--color-accent-subtle)] hover:bg-[var(--color-accent-muted)] transition-colors cursor-pointer"
+          >
+            <span>View all notes</span>
+            <span className="flex items-center gap-1">
+              <span className="text-[var(--color-text-muted)]">+{hiddenCount} more</span>
+              <ArrowRight size={12} />
+            </span>
+          </button>
+        </div>
+      )}
     </aside>
   )
 }
