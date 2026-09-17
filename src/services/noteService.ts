@@ -8,9 +8,9 @@ import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 // ---------------------------------------------------------------------------
 const ENDPOINTS = {
   /** GET all notes / POST create note */
-  createNote: '/notes/create',
+  createNote: `/notes/create`,
   updateNote: (id: number) => `/notes/update/${id}`,
-  getANote: '',
+  getANote: (id: number)=> `notes/getANote/${id}`,
   getAllNotes: '',
   deleteANote: '',
   deleteAllNotes: ''
