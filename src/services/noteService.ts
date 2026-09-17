@@ -7,15 +7,12 @@ import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 // These are the assumed REST paths. Replace with actual paths once known.
 // ---------------------------------------------------------------------------
 const ENDPOINTS = {
-  /** GET all notes / POST create note */
   createNote: `/notes/create`,
   updateNote: (id: number) => `/notes/update/${id}`,
   getANote: (id: number)=> `notes/getANote/${id}`,
-  getAllNotes: '',
-  deleteANote: '',
-  deleteAllNotes: ''
-  /** GET, PUT, DELETE single note by id */
-  note: (id: number) => `/notes/${id}`,
+  getAllNotes: `notes/getAllNotes`,
+  deleteANote: (id: number)=> `notes/delete/${id}`,
+  deleteAllNotes: `notes/deleteAllNotes`
 } as const
 
 // ---------------------------------------------------------------------------
