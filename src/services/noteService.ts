@@ -12,21 +12,12 @@ const ENDPOINTS = {
   deleteAllNotes: `notes/deleteAllNotes`
 } as const
 
-// ---------------------------------------------------------------------------
-// Response mapping
-//
-// If your Java backend returns a different structure (e.g. `created_at` instead
-// of `createdAt`, or a wrapper like `{ data: Note }`) transform it here so the
-// rest of the UI never needs to know.
-// ---------------------------------------------------------------------------
 
-/** Map a raw backend object to the frontend Note shape. */
 function mapNote(raw: Record<string, unknown>): Note {
   return {
     id: raw.id as number,
     title: raw.title as string,
     content: raw.content as string,
-    // If your backend uses snake_case timestamps, also check raw.created_at:
     createdAt: (raw.createdAt ?? raw.created_at ?? null) as string | null,
     updatedAt: (raw.updatedAt ?? raw.updated_at ?? null) as string | null,
   }
@@ -36,15 +27,13 @@ function mapNote(raw: Record<string, unknown>): Note {
 // Service functions
 // ---------------------------------------------------------------------------
 
-/** Fetch every note from the backend. */
 export async function getAllNotes(): Promise<Note[]> {
-  const data = await apiClient.get<Record<string, unknown>[]>(ENDPOINTS.notes)
+  const data = await apiClient.get<Record<string, unknown>[]>(ENDPOINTS.getAllNotes)
   // Guard: backend might return null/undefined on empty list
   if (!Array.isArray(data)) return []
   return data.map(mapNote)
 }
 
-/** Fetch a single note by its id. */
 export async function getNoteById(id: number): Promise<Note> {
   const data = await apiClient.get<Record<string, unknown>>(ENDPOINTS.note(id))
   return mapNote(data)
