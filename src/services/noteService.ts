@@ -8,7 +8,12 @@ import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 // ---------------------------------------------------------------------------
 const ENDPOINTS = {
   /** GET all notes / POST create note */
-  notes: '/notes',
+  createNote: '/notes/create',
+  updateNote: '',
+  getANote: '',
+  getAllNotes: '',
+  deleteANote: '',
+  deleteAllNotes: ''
   /** GET, PUT, DELETE single note by id */
   note: (id: number) => `/notes/${id}`,
 } as const
