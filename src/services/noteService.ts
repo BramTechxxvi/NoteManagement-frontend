@@ -1,13 +1,3 @@
-// ---------------------------------------------------------------------------
-// Note Service — the ONLY place that knows backend endpoint paths.
-//
-// TO CONNECT YOUR JAVA BACKEND:
-//   1. Replace the ENDPOINTS paths below with your actual routes.
-//   2. If your Java DTO shape differs from the frontend Note type, add
-//      transformation functions in the "Response mapping" section below.
-//   3. If your backend uses snake_case (e.g. created_at) adjust the mappers.
-// ---------------------------------------------------------------------------
-
 import { apiClient } from '@/lib/apiClient'
 import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 
