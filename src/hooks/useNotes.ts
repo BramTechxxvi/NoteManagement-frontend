@@ -127,7 +127,7 @@ export function useNotes(): UseNotesReturn {
   }, [])
 
   const update = useCallback(
-    async (id: number, payload: UpdateNotePayload): Promise<Note | null> => {
+    async (id: string, payload: UpdateNotePayload): Promise<Note | null> => {
       dispatch({ type: 'MUTATE_START' })
       try {
         const note = await updateNote(id, payload)
@@ -142,7 +142,7 @@ export function useNotes(): UseNotesReturn {
     [],
   )
 
-  const remove = useCallback(async (id: number): Promise<boolean> => {
+  const remove = useCallback(async (id: string): Promise<boolean> => {
     dispatch({ type: 'MUTATE_START' })
     try {
       await deleteNote(id)

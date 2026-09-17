@@ -5,10 +5,10 @@ import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 
 const ENDPOINTS = {
   createNote: `/notes/create`,
-  updateNote: (id: number) => `/notes/update/${id}`,
-  getANote: (id: number) => `/notes/getANote/${id}`,
+  updateNote: (id: string) => `/notes/update/${id}`,
+  getANote: (id: string) => `/notes/getANote/${id}`,
   getAllNotes: `/notes/getAllNotes`,
-  deleteANote: (id: number) => `/notes/delete/${id}`,
+  deleteANote: (id: string) => `/notes/delete/${id}`,
   deleteAllNotes: `/notes/deleteAllNotes`,
 } as const
 
@@ -34,25 +34,17 @@ export async function getAllNotes(): Promise<Note[]> {
 }
 
 
-export async function getNoteById(id: number): Promise<Note> {
+export async function getNoteById(id: string): Promise<Note> {
   const data = await apiClient.get<Record<string, unknown>>(ENDPOINTS.getANote(id))
   return mapNote(data)
 }
 
-
-export async function createNote(payload: CreateNotePayload): Promise<Note> {
-  const data = await apiClient.post<Record<string, unknown>>(ENDPOINTS.createNote, payload)
-  return mapNote(data)
-}
-
-
-export async function updateNote(id: number, payload: UpdateNotePayload): Promise<Note> {
+export async function updateNote(id: string, payload: UpdateNotePayload): Promise<Note> {
   const data = await apiClient.put<Record<string, unknown>>(ENDPOINTS.updateNote(id), payload)
   return mapNote(data)
 }
 
-
-export async function deleteNote(id: number): Promise<void> {
+export async function deleteNote(id: string): Promise<void> {
   await apiClient.delete<void>(ENDPOINTS.deleteANote(id))
 }
 
