@@ -11,7 +11,7 @@ interface SidebarProps {
   notes: Note[]
   fetchStatus: ApiStatus
   fetchError: string | null
-  selectedId: number | null
+  selectedId: string | null
   onSelect: (note: Note) => void
   onNewNote: () => void
   onRefresh: () => void

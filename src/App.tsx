@@ -37,7 +37,6 @@ function NotesApp() {
   // Top-level view
   const [appView, setAppView] = useState<AppView>('workspace')
 
-  // Selected note & editor mode
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [mode, setMode] = useState<EditorMode>('view')
 

@@ -10,7 +10,7 @@ interface AllNotesPageProps {
   notes: Note[]
   fetchStatus: ApiStatus
   fetchError: string | null
-  selectedId: number | null
+  selectedId: string | null
   onBack: () => void
   onSelect: (note: Note) => void
   onNewNote: () => void
