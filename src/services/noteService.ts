@@ -1,11 +1,8 @@
 import { apiClient } from '@/lib/apiClient'
 import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 
-// ---------------------------------------------------------------------------
-// ⚠️  ENDPOINT CONFIGURATION — update these paths to match your Java routes.
-//
-// These are the assumed REST paths. Replace with actual paths once known.
-// ---------------------------------------------------------------------------
+
+
 const ENDPOINTS = {
   createNote: `/notes/create`,
   updateNote: (id: number) => `/notes/update/${id}`,
