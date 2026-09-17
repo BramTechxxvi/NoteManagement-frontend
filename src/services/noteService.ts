@@ -33,9 +33,13 @@ export async function getAllNotes(): Promise<Note[]> {
   return data.map(mapNote)
 }
 
-
 export async function getNoteById(id: string): Promise<Note> {
   const data = await apiClient.get<Record<string, unknown>>(ENDPOINTS.getANote(id))
+  return mapNote(data)
+}
+
+export async function createNote(payload: CreateNotePayload): Promise<Note> {
+  const data = await apiClient.post<Record<string, unknown>>(ENDPOINTS.createNote, payload)
   return mapNote(data)
 }
 
