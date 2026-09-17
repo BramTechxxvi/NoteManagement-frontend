@@ -4,10 +4,8 @@ interface EmptyStateProps {
   onNewNote: () => void
 }
 
-/**
- * Shown in the main content area when no note is selected.
- * Intentional placeholder — never leaves the user staring at a blank screen.
- */
+
+
 export function EmptyState({ onNewNote }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center h-full px-8 text-center select-none">
