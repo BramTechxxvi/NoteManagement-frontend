@@ -6,10 +6,10 @@ import type { CreateNotePayload, Note, UpdateNotePayload } from '@/types/note'
 const ENDPOINTS = {
   createNote: `/notes/create`,
   updateNote: (id: number) => `/notes/update/${id}`,
-  getANote: (id: number)=> `notes/getANote/${id}`,
-  getAllNotes: `notes/getAllNotes`,
-  deleteANote: (id: number)=> `notes/delete/${id}`,
-  deleteAllNotes: `notes/deleteAllNotes`
+  getANote: (id: number) => `/notes/getANote/${id}`,
+  getAllNotes: `/notes/getAllNotes`,
+  deleteANote: (id: number) => `/notes/delete/${id}`,
+  deleteAllNotes: `/notes/deleteAllNotes`,
 } as const
 
 
