@@ -8,7 +8,11 @@ import type { EditorMode } from '@/components/NoteEditor'
 import { Sidebar } from '@/components/Sidebar'
 import { ToastContainer, ToastProvider, useToast } from '@/components/Toast'
 import { useNotes } from '@/hooks/useNotes'
+import { AllNotesPage } from '@/pages/AllNotesPage'
 import type { Note } from '@/types/note'
+
+
+type AppView = 'workspace' | 'all-notes'
 
 // ---------------------------------------------------------------------------
 // Inner app — has access to toast context
@@ -16,7 +20,22 @@ import type { Note } from '@/types/note'
 
 function NotesApp() {
   const { toast } = useToast()
-  const { notes, fetchStatus, fetchError, mutating, mutationError, refresh, create, update, remove, removeAll, clearMutationError } = useNotes()
+  const {
+    notes,
+    fetchStatus,
+    fetchError,
+    mutating,
+    mutationError,
+    refresh,
+    create,
+    update,
+    remove,
+    removeAll,
+    clearMutationError,
+  } = useNotes()
+
+  // Top-level view
+  const [appView, setAppView] = useState<AppView>('workspace')
 
   // Selected note & editor mode
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
@@ -25,22 +44,37 @@ function NotesApp() {
   // Mobile: whether to show the note panel (true) or sidebar (false)
   const [mobileShowEditor, setMobileShowEditor] = useState(false)
 
-  // Confirm dialogs
+  // Confirm dialog for single-note deletion (used in workspace view)
   const [deleteTarget, setDeleteTarget] = useState<Note | null>(null)
-  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
 
   // ---------------------------------------------------------------------------
-  // Handlers
+  // Navigation
   // ---------------------------------------------------------------------------
 
-  const handleSelectNote = useCallback((note: Note) => {
-    setSelectedNote(note)
-    setMode('view')
-    setMobileShowEditor(true)
-    clearMutationError()
-  }, [clearMutationError])
+  const handleViewAll = useCallback(() => {
+    setAppView('all-notes')
+  }, [])
+
+  const handleBackToWorkspace = useCallback(() => {
+    setAppView('workspace')
+  }, [])
+
+  // ---------------------------------------------------------------------------
+  // Note selection & editor handlers
+  // ---------------------------------------------------------------------------
+
+  const handleSelectNote = useCallback(
+    (note: Note) => {
+      setSelectedNote(note)
+      setMode('view')
+      setMobileShowEditor(true)
+      clearMutationError()
+    },
+    [clearMutationError],
+  )
 
   const handleNewNote = useCallback(() => {
+    setAppView('workspace')   // always go to workspace to create
     setSelectedNote(null)
     setMode('new')
     setMobileShowEditor(true)
@@ -53,7 +87,6 @@ function NotesApp() {
 
   const handleCancelEdit = useCallback(() => {
     if (mode === 'new') {
-      // Discard: go back to selection or empty state
       setMobileShowEditor(selectedNote !== null)
       setMode('view')
     } else {
@@ -82,6 +115,10 @@ function NotesApp() {
     [mode, selectedNote, create, update, toast],
   )
 
+  // ---------------------------------------------------------------------------
+  // Delete single note
+  // ---------------------------------------------------------------------------
+
   const handleDeleteRequest = useCallback((note: Note) => {
     setDeleteTarget(note)
   }, [])
@@ -98,27 +135,31 @@ function NotesApp() {
         setMode('view')
         setMobileShowEditor(false)
       }
-    } else if (mutationError) {
-      toast(mutationError, 'error')
+    } else {
+      toast(mutationError ?? 'Failed to delete note', 'error')
     }
   }, [deleteTarget, remove, selectedNote, mutationError, toast])
 
-  const handleDeleteAll = useCallback(() => {
-    setConfirmDeleteAll(true)
-  }, [])
+  // ---------------------------------------------------------------------------
+  // Delete all notes (called from AllNotesPage, which owns its confirm dialog)
+  // ---------------------------------------------------------------------------
 
-  const handleDeleteAllConfirm = useCallback(async () => {
-    setConfirmDeleteAll(false)
+  const handleDeleteAll = useCallback(async (): Promise<boolean> => {
     const ok = await removeAll()
     if (ok) {
       setSelectedNote(null)
       setMode('view')
       setMobileShowEditor(false)
       toast('All notes deleted', 'success')
-    } else if (mutationError) {
-      toast(mutationError, 'error')
+    } else {
+      toast(mutationError ?? 'Failed to delete all notes', 'error')
     }
+    return ok
   }, [removeAll, mutationError, toast])
+
+  // ---------------------------------------------------------------------------
+  // Mobile back
+  // ---------------------------------------------------------------------------
 
   const handleMobileBack = useCallback(() => {
     setMobileShowEditor(false)
@@ -128,103 +169,134 @@ function NotesApp() {
     }
   }, [mode])
 
-  // Show mutation errors as toasts when they surface
-  // (handled inline via the error response in save handlers, but
-  //  also shown directly here for delete operations)
   const showEditor = mode === 'new' || selectedNote !== null
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
     <>
-      {/* ------------------------------------------------------------------ */}
-      {/* Main layout — sidebar + editor                                       */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="flex h-full overflow-hidden">
-
-        {/* ---- SIDEBAR ---- */}
-        {/* Desktop: always visible. Mobile: hidden when editor is open */}
-        <div
-          className={[
-            'flex-shrink-0 flex flex-col',
-            // Desktop: fixed width sidebar
-            'md:w-72 lg:w-80',
-            // Mobile: full width, toggled
-            'w-full md:block',
-            mobileShowEditor ? 'hidden md:flex' : 'flex',
-          ].join(' ')}
-        >
-          <Sidebar
-            notes={notes}
-            fetchStatus={fetchStatus}
-            fetchError={fetchError}
-            selectedId={selectedNote?.id ?? null}
-            onSelect={handleSelectNote}
-            onNewNote={handleNewNote}
-            onRefresh={() => void refresh()}
-            onDeleteAll={handleDeleteAll}
-          />
-        </div>
-
-        {/* ---- EDITOR PANEL ---- */}
-        {/* Desktop: always visible. Mobile: toggled */}
-        <main
-          className={[
-            'flex-1 flex flex-col min-w-0 overflow-hidden',
-            'bg-[var(--color-surface)]',
-            mobileShowEditor ? 'flex' : 'hidden md:flex',
-          ].join(' ')}
-          aria-label="Note editor"
-        >
-          {/* Mobile back button */}
-          <div className="md:hidden flex items-center px-3 py-2 border-b border-[var(--color-border-subtle)] shrink-0">
-            <button
-              onClick={handleMobileBack}
-              className="flex items-center gap-1 text-sm text-[var(--color-accent)] font-medium cursor-pointer py-1 px-1.5 rounded hover:bg-[var(--color-accent-subtle)] transition-colors"
-              aria-label="Back to notes list"
+      <AnimatePresence mode="wait">
+        {appView === 'all-notes' ? (
+          /* ---------------------------------------------------------------- */
+          /* Full-page All Notes view                                          */
+          /* ---------------------------------------------------------------- */
+          <motion.div
+            key="all-notes"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col h-full"
+          >
+            <AllNotesPage
+              notes={notes}
+              fetchStatus={fetchStatus}
+              fetchError={fetchError}
+              selectedId={selectedNote?.id ?? null}
+              onBack={handleBackToWorkspace}
+              onSelect={handleSelectNote}
+              onNewNote={handleNewNote}
+              onDeleteNote={handleDeleteRequest}
+              onDeleteAll={handleDeleteAll}
+            />
+          </motion.div>
+        ) : (
+          /* ---------------------------------------------------------------- */
+          /* Normal workspace: sidebar + editor                                */
+          /* ---------------------------------------------------------------- */
+          <motion.div
+            key="workspace"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex h-full overflow-hidden"
+          >
+            {/* ---- SIDEBAR ---- */}
+            <div
+              className={[
+                'flex-shrink-0 flex flex-col',
+                'md:w-72 lg:w-80',
+                'w-full md:block',
+                mobileShowEditor ? 'hidden md:flex' : 'flex',
+              ].join(' ')}
             >
-              <ChevronLeft size={16} aria-hidden="true" />
-              Notes
-            </button>
-          </div>
+              <Sidebar
+                notes={notes}
+                fetchStatus={fetchStatus}
+                fetchError={fetchError}
+                selectedId={selectedNote?.id ?? null}
+                onSelect={handleSelectNote}
+                onNewNote={handleNewNote}
+                onRefresh={() => void refresh()}
+                onViewAll={handleViewAll}
+              />
+            </div>
 
-          <AnimatePresence mode="wait">
-            {showEditor ? (
-              <motion.div
-                key={`${selectedNote?.id ?? 'new'}-${mode}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="flex-1 overflow-hidden"
-              >
-                <NoteEditor
-                  note={selectedNote}
-                  mode={mode}
-                  isSaving={mutating}
-                  saveError={mutationError}
-                  onSave={handleSave}
-                  onDelete={handleDeleteRequest}
-                  onEdit={handleEdit}
-                  onCancelEdit={handleCancelEdit}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="flex-1"
-              >
-                <EmptyState onNewNote={handleNewNote} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
-      </div>
+            {/* ---- EDITOR PANEL ---- */}
+            <main
+              className={[
+                'flex-1 flex flex-col min-w-0 overflow-hidden',
+                'bg-[var(--color-surface)]',
+                mobileShowEditor ? 'flex' : 'hidden md:flex',
+              ].join(' ')}
+              aria-label="Note editor"
+            >
+              {/* Mobile back button */}
+              <div className="md:hidden flex items-center px-3 py-2 border-b border-[var(--color-border-subtle)] shrink-0">
+                <button
+                  onClick={handleMobileBack}
+                  className="flex items-center gap-1 text-sm text-[var(--color-accent)] font-medium cursor-pointer py-1 px-1.5 rounded hover:bg-[var(--color-accent-subtle)] transition-colors"
+                  aria-label="Back to notes list"
+                >
+                  <ChevronLeft size={16} aria-hidden="true" />
+                  Notes
+                </button>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {showEditor ? (
+                  <motion.div
+                    key={`${selectedNote?.id ?? 'new'}-${mode}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="flex-1 overflow-hidden"
+                  >
+                    <NoteEditor
+                      note={selectedNote}
+                      mode={mode}
+                      isSaving={mutating}
+                      saveError={mutationError}
+                      onSave={handleSave}
+                      onDelete={handleDeleteRequest}
+                      onEdit={handleEdit}
+                      onCancelEdit={handleCancelEdit}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="flex-1"
+                  >
+                    <EmptyState onNewNote={handleNewNote} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </main>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Confirm: delete single note                                          */}
+      {/* Confirm: delete single note (shared across both views)              */}
       {/* ------------------------------------------------------------------ */}
       <ConfirmDialog
         open={deleteTarget !== null}
@@ -240,20 +312,6 @@ function NotesApp() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Confirm: delete ALL notes                                            */}
-      {/* ------------------------------------------------------------------ */}
-      <ConfirmDialog
-        open={confirmDeleteAll}
-        title="Delete all notes?"
-        description="Every note will be permanently deleted. This cannot be undone. Are you absolutely sure?"
-        confirmLabel="Delete Everything"
-        destructive
-        onConfirm={() => void handleDeleteAllConfirm()}
-        onCancel={() => setConfirmDeleteAll(false)}
-      />
-
-      {/* Toasts */}
       <ToastContainer />
     </>
   )
