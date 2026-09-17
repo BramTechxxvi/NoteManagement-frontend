@@ -1,12 +1,3 @@
-// ---------------------------------------------------------------------------
-// Central HTTP client.
-// All fetch calls go through here — components never touch fetch() directly.
-//
-// TO CONNECT YOUR BACKEND:
-//   Set VITE_API_BASE_URL in .env.local, e.g.:
-//     VITE_API_BASE_URL=http://localhost:8080
-// ---------------------------------------------------------------------------
-
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
 if (!BASE_URL && import.meta.env.DEV) {
