@@ -34,39 +34,30 @@ export async function getAllNotes(): Promise<Note[]> {
   return data.map(mapNote)
 }
 
+
 export async function getNoteById(id: number): Promise<Note> {
-  const data = await apiClient.get<Record<string, unknown>>(ENDPOINTS.note(id))
+  const data = await apiClient.get<Record<string, unknown>>(ENDPOINTS.getANote(id))
   return mapNote(data)
 }
 
-/** Create a new note and return the created entity. */
+
 export async function createNote(payload: CreateNotePayload): Promise<Note> {
-  const data = await apiClient.post<Record<string, unknown>>(ENDPOINTS.notes, payload)
+  const data = await apiClient.post<Record<string, unknown>>(ENDPOINTS.createNote, payload)
   return mapNote(data)
 }
 
-/**
- * Update an existing note and return the updated entity.
- *
- * ⚠️  ASSUMPTION: backend uses PUT (full replacement).
- * Change apiClient.put → apiClient.patch if your endpoint is PATCH.
- */
+
 export async function updateNote(id: number, payload: UpdateNotePayload): Promise<Note> {
-  const data = await apiClient.put<Record<string, unknown>>(ENDPOINTS.note(id), payload)
+  const data = await apiClient.put<Record<string, unknown>>(ENDPOINTS.updateNote(id), payload)
   return mapNote(data)
 }
 
-/** Delete a single note by id. */
+
 export async function deleteNote(id: number): Promise<void> {
-  await apiClient.delete<void>(ENDPOINTS.note(id))
+  await apiClient.delete<void>(ENDPOINTS.deleteANote(id))
 }
 
-/**
- * Delete all notes.
- *
- * ⚠️  ASSUMPTION: DELETE /notes deletes everything.
- * Adjust the endpoint if your backend uses a different route.
- */
+
 export async function deleteAllNotes(): Promise<void> {
-  await apiClient.delete<void>(ENDPOINTS.notes)
+  await apiClient.delete<void>(ENDPOINTS.deleteAllNotes)
 }
